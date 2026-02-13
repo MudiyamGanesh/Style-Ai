@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Style AI | Midnight Vogue</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script> </head>
+<body>
+
+    <div class="main-container">
+        <header>
+            <h1>STYLE <span class="accent">AI</span></h1>
+            <p>Your Personal Fashion Architect</p>
+        </header>
+
+        <div class="card input-section">
+            <div class="drop-zone" id="drop-zone">
+                <p>Drag & Drop your photo here</p>
+                <input type="file" id="file-input" accept="image/*" hidden>
+                <button class="btn-secondary" onclick="document.getElementById('file-input').click()">Choose File</button>
+                <img id="image-preview" class="hidden" alt="Preview">
+            </div>
+
+            <div class="controls">
+                <label>I identify as:</label>
+                <select id="gender-select">
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Non-Binary">Non-Binary</option>
+                </select>
+                <button id="analyze-btn" class="btn-primary">ANALYZE STYLE</button>
+            </div>
+        </div>
+
+        <div id="loading" class="hidden">
+            <div class="spinner"></div>
+            <p>Scanning Skin Tone & Consulting LLaMA...</p>
+        </div>
+
+        <div id="results" class="hidden">
+            
+            <div class="card result-card">
+                <h2>Analysis</h2>
+                <div class="stat-row">
+                    <span>Detected Tone:</span>
+                    <span id="res-skin-tone" class="highlight">Loading...</span>
+                </div>
+            </div>
+
+            <div class="advice-grid">
+                <div class="card">
+                    <h3>Casual Look</h3>
+                    <p id="res-casual">...</p>
+                </div>
+                <div class="card">
+                    <h3>Formal Look</h3>
+                    <p id="res-formal">...</p>
+                </div>
+                <div class="card">
+                    <h3>Color Palette</h3>
+                    <div id="color-swatches" class="swatch-container"></div>
+                </div>
+                <div class="card">
+                    <h3>Avoid</h3>
+                    <div id="res-avoid" class="chip-container"></div>
+                </div>
+            </div>
+
+            <div class="card shopping-section">
+                <h3>Curated for You</h3>
+                <div id="shopping-links" class="link-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
