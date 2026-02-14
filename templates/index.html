@@ -40,7 +40,6 @@
                             <p>Drag & Drop your photo here</p>
                             <input type="file" id="file-input" accept="image/*" hidden>
                             <button class="btn-secondary" onclick="document.getElementById('file-input').click()">Browse Files</button>
-                            <img id="image-preview" class="hidden" alt="Preview">
                         </div>
 
                         <div class="controls">
@@ -61,14 +60,24 @@
                 </div>
 
                 <div id="results-view" class="hidden view-section">
-                    <div class="card result-card tone-card">
-                        <div class="tone-header">
-                            <h2>Your Profile</h2>
-                            <span class="badge" id="res-date">Today</span>
+                    <div class="card result-card tone-card profile-container">
+                        <div class="profile-image-wrapper">
+                            <img id="image-preview" class="hidden" alt="Profile Preview">
                         </div>
-                        <div class="stat-row">
-                            <span>Detected Complexion:</span>
-                            <span id="res-skin-tone" class="highlight">Loading...</span>
+                        
+                        <div class="profile-stats-wrapper">
+                            <div class="tone-header">
+                                <h2>Your Profile</h2>
+                                <span class="badge" id="res-date">Today</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">Style Focus:</span>
+                                <span id="res-gender" class="highlight-text">Loading...</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">Detected Tone:</span>
+                                <span id="res-skin-tone" class="highlight-text">Loading...</span>
+                            </div>
                         </div>
                     </div>
 
@@ -99,9 +108,8 @@
             </div>
         </main>
     </div>
-    <button class="chat-toggle-btn" id="chat-toggle-btn" style="font-size: 2rem;">
-        🤖
-    </button>
+
+    <button class="chat-toggle-btn" id="chat-toggle-btn" style="font-size: 2rem;">🤖</button>
 
     <div class="chat-window hidden" id="chat-window">
         <div class="chat-header">
@@ -118,6 +126,7 @@
             <button id="send-chat-btn"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
+
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

@@ -4,6 +4,7 @@ const fileInput = document.getElementById('file-input');
 const preview = document.getElementById('image-preview');
 const analyzeBtn = document.getElementById('analyze-btn');
 const newAnalysisBtn = document.getElementById('new-analysis-btn');
+const genderSelect = document.getElementById('gender-select');
 
 // Views
 const inputView = document.getElementById('input-view');
@@ -35,15 +36,10 @@ function handleFile(file) {
         const reader = new FileReader();
         reader.onload = (e) => {
             preview.src = e.target.result;
-            
-            // THE FIX: Remove the hidden class so the image can show
+            // Image is now in results view, just show it.
+            // It won't be visible until results view is active.
             preview.classList.remove('hidden');
             preview.classList.add('visible'); 
-            
-            // Hide the placeholder text and icon
-            document.querySelector('.drop-zone p').style.display = 'none';
-            document.querySelector('.drop-icon').style.display = 'none';
-            document.querySelector('.drop-zone button').innerText = "Change Photo";
         };
         reader.readAsDataURL(file);
         
@@ -63,11 +59,11 @@ function showView(view) {
 
 newAnalysisBtn.addEventListener('click', () => {
     showView(inputView);
-    // Reset form
+    // Reset form & image
+    preview.src = "";
     preview.classList.remove('visible');
-    document.querySelector('.drop-zone p').style.display = 'block';
-    document.querySelector('.drop-icon').style.display = 'block';
-    document.querySelector('.drop-zone button').innerText = "Browse Files";
+    preview.classList.add('hidden');
+    
     fileInput.value = '';
     
     // Close sidebar on mobile
@@ -88,9 +84,10 @@ analyzeBtn.addEventListener('click', async () => {
 
     showView(loadingView);
 
+    const selectedGender = genderSelect.value;
     const formData = new FormData();
     formData.append('file', fileInput.files[0]);
-    formData.append('gender', document.getElementById('gender-select').value);
+    formData.append('gender', selectedGender);
 
     try {
         const response = await fetch('/predict', { method: 'POST', body: formData });
@@ -104,9 +101,10 @@ analyzeBtn.addEventListener('click', async () => {
         const historyData = {
             id: Date.now(),
             date: new Date().toLocaleDateString(),
-            gender: document.getElementById('gender-select').value,
+            gender: selectedGender,
             skin_tone: data.skin_tone,
-            advice: advice
+            advice: advice,
+            imageSrc: preview.src // Optional: save image for history recall if needed later
         };
         saveToHistory(historyData);
         
@@ -118,23 +116,16 @@ analyzeBtn.addEventListener('click', async () => {
         alert("Something went wrong! Check console.");
         showView(inputView);
     }
-    preview.classList.remove('visible');
-    preview.classList.add('hidden'); // Put the hidden class back
-    
-    document.querySelector('.drop-zone p').style.display = 'block';
-    document.querySelector('.drop-icon').style.display = 'block';
-    document.querySelector('.drop-zone button').innerText = "Browse Files";
-    fileInput.value = '';
-    
-    // Close sidebar on mobile
-    document.getElementById('sidebar').classList.remove('active');
-    
 });
 
 // 4. RENDERING & HISTORY
 function renderResults(data) {
+    // Update Stats in new profile layout
     document.getElementById('res-skin-tone').innerText = data.skin_tone;
+    document.getElementById('res-gender').innerText = data.gender; // New Gender Stat
     document.getElementById('res-date').innerText = data.date;
+
+    // Update Advice
     document.getElementById('res-casual').innerText = data.advice.outfit_casual;
     document.getElementById('res-formal').innerText = data.advice.outfit_formal;
 
@@ -193,9 +184,12 @@ function loadHistoryList() {
     history.forEach(item => {
         const li = document.createElement('li');
         li.className = 'history-item';
-        li.innerHTML = `<i class="far fa-user-circle"></i> ${item.skin_tone} Profile`;
+        // Using a more descriptive label for history
+        li.innerHTML = `<i class="far fa-user-circle"></i> ${item.skin_tone} / ${item.gender}`;
         
         li.addEventListener('click', () => {
+            // Note: If you want the image to show on history click, you'd need to save/restore it.
+            // For now, we just show the data. The image will be hidden if it was reset.
             renderResults(item);
             document.getElementById('sidebar').classList.remove('active'); // Close on mobile
         });
@@ -215,11 +209,15 @@ const chatInput = document.getElementById('chat-input');
 const sendChatBtn = document.getElementById('send-chat-btn');
 const chatBody = document.getElementById('chat-body');
 
-// Toggle chat window
 // True toggle for the chat window
 chatToggleBtn.addEventListener('click', () => {
     chatWindow.classList.toggle('hidden');
 });
+
+closeChatBtn.addEventListener('click', () => {
+     chatWindow.classList.add('hidden');
+});
+
 
 async function sendChatMessage() {
     const message = chatInput.value.trim();
