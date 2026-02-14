@@ -1,7 +1,8 @@
 // DOM Elements
 const dropZone = document.getElementById('drop-zone');
 const fileInput = document.getElementById('file-input');
-const preview = document.getElementById('image-preview');
+const uploadPreview = document.getElementById('upload-preview'); // Fixed reference
+const resultProfileImg = document.getElementById('result-profile-img'); // Fixed reference
 const analyzeBtn = document.getElementById('analyze-btn');
 const newAnalysisBtn = document.getElementById('new-analysis-btn');
 const genderSelect = document.getElementById('gender-select');
@@ -35,11 +36,24 @@ function handleFile(file) {
     if (file && file.type.startsWith('image/')) {
         const reader = new FileReader();
         reader.onload = (e) => {
-            preview.src = e.target.result;
-            // Image is now in results view, just show it.
-            // It won't be visible until results view is active.
-            preview.classList.remove('hidden');
-            preview.classList.add('visible'); 
+            const imgSrc = e.target.result;
+
+            // Set both images
+            uploadPreview.src = imgSrc;
+            resultProfileImg.src = imgSrc;
+
+            // Show the upload preview in the drop zone
+            uploadPreview.classList.remove('hidden');
+            uploadPreview.classList.add('visible'); 
+            
+            // Also prep the result image to be visible when results load
+            resultProfileImg.classList.remove('hidden');
+            resultProfileImg.classList.add('visible'); 
+
+            // Hide the placeholder text and icon
+            document.querySelector('.drop-zone p').style.display = 'none';
+            document.querySelector('.drop-icon').style.display = 'none';
+            document.querySelector('.drop-zone button').innerText = "Change Photo";
         };
         reader.readAsDataURL(file);
         
@@ -59,10 +73,16 @@ function showView(view) {
 
 newAnalysisBtn.addEventListener('click', () => {
     showView(inputView);
-    // Reset form & image
-    preview.src = "";
-    preview.classList.remove('visible');
-    preview.classList.add('hidden');
+    
+    // Reset form & images
+    uploadPreview.src = "";
+    uploadPreview.classList.remove('visible');
+    uploadPreview.classList.add('hidden');
+    
+    // Bring back the text and icon
+    document.querySelector('.drop-zone p').style.display = 'block';
+    document.querySelector('.drop-icon').style.display = 'block';
+    document.querySelector('.drop-zone button').innerText = "Browse Files";
     
     fileInput.value = '';
     
@@ -104,7 +124,7 @@ analyzeBtn.addEventListener('click', async () => {
             gender: selectedGender,
             skin_tone: data.skin_tone,
             advice: advice,
-            imageSrc: preview.src // Optional: save image for history recall if needed later
+            imageSrc: uploadPreview.src // Fixed: Now correctly references the upload image
         };
         saveToHistory(historyData);
         
@@ -120,16 +140,13 @@ analyzeBtn.addEventListener('click', async () => {
 
 // 4. RENDERING & HISTORY
 function renderResults(data) {
-    // Update Stats in new profile layout
     document.getElementById('res-skin-tone').innerText = data.skin_tone;
-    document.getElementById('res-gender').innerText = data.gender; // New Gender Stat
+    document.getElementById('res-gender').innerText = data.gender;
     document.getElementById('res-date').innerText = data.date;
 
-    // Update Advice
     document.getElementById('res-casual').innerText = data.advice.outfit_casual;
     document.getElementById('res-formal').innerText = data.advice.outfit_formal;
 
-    // Chips
     const avoidContainer = document.getElementById('res-avoid');
     avoidContainer.innerHTML = ''; 
     data.advice.colors_to_avoid.forEach(colorName => {
@@ -139,7 +156,6 @@ function renderResults(data) {
         avoidContainer.appendChild(chip);
     });
 
-    // Swatches
     const swatchContainer = document.getElementById('color-swatches');
     swatchContainer.innerHTML = '';
     data.advice.colors_to_wear.forEach(color => {
@@ -150,7 +166,6 @@ function renderResults(data) {
         swatchContainer.appendChild(div);
     });
 
-    // Links
     const linkContainer = document.getElementById('shopping-links');
     linkContainer.innerHTML = '';
     if (data.advice.shopping_list) {
@@ -171,7 +186,7 @@ function renderResults(data) {
 // Local Storage Management
 function saveToHistory(data) {
     let history = JSON.parse(localStorage.getItem('styleHistory')) || [];
-    history.unshift(data); // Add to beginning
+    history.unshift(data);
     localStorage.setItem('styleHistory', JSON.stringify(history));
     loadHistoryList();
 }
@@ -184,21 +199,17 @@ function loadHistoryList() {
     history.forEach(item => {
         const li = document.createElement('li');
         li.className = 'history-item';
-        // Using a more descriptive label for history
         li.innerHTML = `<i class="far fa-user-circle"></i> ${item.skin_tone} / ${item.gender}`;
         
         li.addEventListener('click', () => {
-            // Note: If you want the image to show on history click, you'd need to save/restore it.
-            // For now, we just show the data. The image will be hidden if it was reset.
             renderResults(item);
-            document.getElementById('sidebar').classList.remove('active'); // Close on mobile
+            document.getElementById('sidebar').classList.remove('active');
         });
         
         historyContainer.appendChild(li);
     });
 }
 
-// Load history on startup
 loadHistoryList();
 
 // --- CHATBOT LOGIC ---
@@ -209,7 +220,6 @@ const chatInput = document.getElementById('chat-input');
 const sendChatBtn = document.getElementById('send-chat-btn');
 const chatBody = document.getElementById('chat-body');
 
-// True toggle for the chat window
 chatToggleBtn.addEventListener('click', () => {
     chatWindow.classList.toggle('hidden');
 });
@@ -218,16 +228,13 @@ closeChatBtn.addEventListener('click', () => {
      chatWindow.classList.add('hidden');
 });
 
-
 async function sendChatMessage() {
     const message = chatInput.value.trim();
     if (!message) return;
 
-    // Add user message to UI
     appendMessage(message, 'user-message');
     chatInput.value = '';
 
-    // Try to get current context if they already analyzed a photo
     let currentTone = 'Unknown';
     const toneElement = document.getElementById('res-skin-tone');
     if (toneElement && toneElement.innerText !== 'Loading...') {
@@ -235,7 +242,6 @@ async function sendChatMessage() {
     }
     const currentGender = document.getElementById('gender-select').value;
     
-    // Add loading indicator
     const loadingId = appendMessage('Thinking...', 'bot-message');
 
     try {
@@ -251,7 +257,6 @@ async function sendChatMessage() {
 
         const data = await response.json();
         
-        // Remove loading indicator and add real response
         document.getElementById(loadingId).remove();
         
         if (data.error) throw new Error(data.error);
@@ -267,13 +272,12 @@ function appendMessage(text, className) {
     const msgDiv = document.createElement('div');
     msgDiv.className = `chat-message ${className}`;
     msgDiv.innerText = text;
-    msgDiv.id = 'msg-' + Date.now(); // Unique ID for loading removal
+    msgDiv.id = 'msg-' + Date.now(); 
     chatBody.appendChild(msgDiv);
-    chatBody.scrollTop = chatBody.scrollHeight; // Auto-scroll to bottom
+    chatBody.scrollTop = chatBody.scrollHeight; 
     return msgDiv.id;
 }
 
-// Event Listeners for clicking send or hitting enter
 sendChatBtn.addEventListener('click', sendChatMessage);
 chatInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') sendChatMessage();

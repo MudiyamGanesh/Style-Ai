@@ -38,6 +38,7 @@
                         <div class="drop-zone" id="drop-zone">
                             <div class="drop-icon"><i class="fas fa-cloud-upload-alt"></i></div>
                             <p>Drag & Drop your photo here</p>
+                            <img id="upload-preview" class="hidden" alt="Upload Preview">
                             <input type="file" id="file-input" accept="image/*" hidden>
                             <button class="btn-secondary" onclick="document.getElementById('file-input').click()">Browse Files</button>
                         </div>
@@ -62,7 +63,7 @@
                 <div id="results-view" class="hidden view-section">
                     <div class="card result-card tone-card profile-container">
                         <div class="profile-image-wrapper">
-                            <img id="image-preview" class="hidden" alt="Profile Preview">
+                            <img id="result-profile-img" class="hidden" alt="Profile Preview">
                         </div>
                         
                         <div class="profile-stats-wrapper">
