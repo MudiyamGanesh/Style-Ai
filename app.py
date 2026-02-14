@@ -83,21 +83,25 @@ def detect_skin_tone(image_path):
 
 def get_styling_advice(gender, skin_tone):
     """
-    Sends data to Groq to get fashion advice.
+    Sends data to Groq to get high-end fashion advice.
     """
-    # UPDATED PROMPT: Added 'shopping_list' for clean search terms
     prompt = f"""
-    Act as a professional high-end fashion stylist.
+    Act as a high-end editorial fashion stylist and color theory expert.
     User Profile:
     - Gender: {gender}
     - Skin Tone: {skin_tone}
 
+    CRITICAL STYLING RULES:
+    1. BANNED ITEMS: DO NOT suggest boring basics. Absolutely NO plain white shirts, standard blue jeans, basic navy blazers, or plain brown sneakers.
+    2. FASHION SENSE: Suggest trend-aware, contemporary silhouettes (e.g., tailored wide-leg trousers, textured knitwear, Cuban collars, monochromatic layering). Mention specific fabrics (linen, silk, tweed, corduroy).
+    3. COLOR THEORY: The color palette MUST specifically flatter the '{skin_tone}' skin tone. (e.g., Jewel tones for Olive, rich earth tones for Deep, soft pastels for Fair).
+
     Provide styling advice in strict JSON format with these keys:
-    - "outfit_casual": "A specific casual outfit recommendation"
-    - "outfit_formal": "A specific formal outfit recommendation"
-    - "colors_to_wear": "List of 3 best matching color hex codes (e.g., '#FF0000')"
-    - "colors_to_avoid": "List of 2 specific color names to avoid (e.g., 'Washed-out Beige') - DO NOT USE HEX CODES HERE"
-    - "shopping_list": "A list of 5 specific, short search terms for the recommended items. MUST include the gender in the search term (e.g., 'Navy Blazer {gender}', 'White Sneakers {gender}')"
+    - "outfit_casual": "A highly specific, stylish casual outfit (mention fabrics, fit, and exact colors)."
+    - "outfit_formal": "A highly specific, fashion-forward formal/evening outfit."
+    - "colors_to_wear": "List of 3 exact hex codes that perfectly complement the skin tone (e.g., '#0F52BA')."
+    - "colors_to_avoid": "List of 2 specific color names that wash out this skin tone (e.g., 'Mustard Yellow'). DO NOT USE HEX CODES HERE."
+    - "shopping_list": "A list of 5 specific search terms for these items, including the gender (e.g., 'Rust corduroy overshirt {gender}', 'High-waisted pleated trousers {gender}')."
 
     Do not include any intro text. Just the JSON.
     """
@@ -105,8 +109,8 @@ def get_styling_advice(gender, skin_tone):
     completion = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
         messages=[{"role": "user", "content": prompt}],
-        temperature=0.5,
-        max_tokens=600, # Increased slightly for the extra list
+        temperature=0.7, # Slightly higher temperature for more creativity
+        max_tokens=700,
         response_format={"type": "json_object"}
     )
 
@@ -140,6 +144,37 @@ def predict():
         "skin_tone": detected_skin_tone,
         "advice": ai_advice
     })
+
+# ADD THIS ROUTE FOR THE CHATBOT
+@app.route('/chat', methods=['POST'])
+def chat():
+    data = request.json
+    user_message = data.get('message')
+    gender = data.get('gender', 'Unknown')
+    skin_tone = data.get('skin_tone', 'Unknown')
+
+    # The AI Persona
+    system_prompt = f"""
+    You are 'Aura', an elite high-end fashion styling AI assistant.
+    You give concise, trendy, and highly expert fashion advice.
+    Current user profile: Gender - {gender}, Skin Tone - {skin_tone}.
+    If the profile is unknown, answer generally but suggest they upload a photo for personalized advice.
+    Keep responses brief, conversational, and formatted cleanly (no markdown headers, just text).
+    """
+
+    try:
+        completion = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_message}
+            ],
+            temperature=0.6,
+            max_tokens=250 # Keep responses punchy
+        )
+        return jsonify({"response": completion.choices[0].message.content})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)

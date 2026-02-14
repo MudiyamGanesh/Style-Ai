@@ -3,78 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Style AI | Midnight Vogue</title>
+    <title>Style AI | Aura Boutique</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script> </head>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</head>
 <body>
 
-    <div class="main-container">
-        <header>
-            <h1>STYLE <span class="accent">AI</span></h1>
-            <p>Your Personal Fashion Architect</p>
-        </header>
-
-        <div class="card input-section">
-            <div class="drop-zone" id="drop-zone">
-                <p>Drag & Drop your photo here</p>
-                <input type="file" id="file-input" accept="image/*" hidden>
-                <button class="btn-secondary" onclick="document.getElementById('file-input').click()">Choose File</button>
-                <img id="image-preview" class="hidden" alt="Preview">
+    <div class="app-layout">
+        <aside class="sidebar" id="sidebar">
+            <button class="new-chat-btn" id="new-analysis-btn">
+                <i class="fas fa-plus"></i> New Analysis
+            </button>
+            <div class="history-list">
+                <p class="history-title">Recent Styles</p>
+                <ul id="history-container">
+                    </ul>
             </div>
+        </aside>
 
-            <div class="controls">
-                <label>I identify as:</label>
-                <select id="gender-select">
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Non-Binary">Non-Binary</option>
-                </select>
-                <button id="analyze-btn" class="btn-primary">ANALYZE STYLE</button>
+        <main class="main-content">
+            <button class="mobile-menu-btn" id="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <div class="main-container">
+                <header>
+                    <h1>Style<span class="accent">AI</span></h1>
+                    <p>Elevate Your Aesthetic</p>
+                </header>
+
+                <div id="input-view" class="view-section">
+                    <div class="card input-section">
+                        <div class="drop-zone" id="drop-zone">
+                            <div class="drop-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                            <p>Drag & Drop your photo here</p>
+                            <input type="file" id="file-input" accept="image/*" hidden>
+                            <button class="btn-secondary" onclick="document.getElementById('file-input').click()">Browse Files</button>
+                            <img id="image-preview" class="hidden" alt="Preview">
+                        </div>
+
+                        <div class="controls">
+                            <label>Style Profile:</label>
+                            <select id="gender-select">
+                                <option value="Male">Menswear</option>
+                                <option value="Female">Womenswear</option>
+                                <option value="Non-Binary">Androgynous / Unisex</option>
+                            </select>
+                            <button id="analyze-btn" class="btn-primary">Generate Style Profile</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="loading" class="hidden view-section">
+                    <div class="spinner"></div>
+                    <p>Analyzing complexion & curating wardrobe...</p>
+                </div>
+
+                <div id="results-view" class="hidden view-section">
+                    <div class="card result-card tone-card">
+                        <div class="tone-header">
+                            <h2>Your Profile</h2>
+                            <span class="badge" id="res-date">Today</span>
+                        </div>
+                        <div class="stat-row">
+                            <span>Detected Complexion:</span>
+                            <span id="res-skin-tone" class="highlight">Loading...</span>
+                        </div>
+                    </div>
+
+                    <div class="advice-grid">
+                        <div class="card">
+                            <h3><i class="fas fa-coffee"></i> Editorial Casual</h3>
+                            <p id="res-casual">...</p>
+                        </div>
+                        <div class="card">
+                            <h3><i class="fas fa-glass-cheers"></i> Elevated Formal</h3>
+                            <p id="res-formal">...</p>
+                        </div>
+                        <div class="card">
+                            <h3><i class="fas fa-palette"></i> Your Color Story</h3>
+                            <div id="color-swatches" class="swatch-container"></div>
+                        </div>
+                        <div class="card">
+                            <h3><i class="fas fa-ban"></i> Colors to Avoid</h3>
+                            <div id="res-avoid" class="chip-container"></div>
+                        </div>
+                    </div>
+
+                    <div class="card shopping-section">
+                        <h3><i class="fas fa-shopping-bag"></i> Curated Boutique</h3>
+                        <div id="shopping-links" class="link-container"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <button class="chat-toggle-btn" id="chat-toggle-btn" style="font-size: 2rem;">
+        🤖
+    </button>
+
+    <div class="chat-window hidden" id="chat-window">
+        <div class="chat-header">
+            <h3>✨ Aura Assistant</h3>
+            <button id="close-chat-btn"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="chat-body" id="chat-body">
+            <div class="chat-message bot-message">
+                Hello! I'm Aura, your personal stylist. Ask me anything about fashion, trends, or how to style a specific item!
             </div>
         </div>
-
-        <div id="loading" class="hidden">
-            <div class="spinner"></div>
-            <p>Scanning Skin Tone & Consulting LLaMA...</p>
-        </div>
-
-        <div id="results" class="hidden">
-            
-            <div class="card result-card">
-                <h2>Analysis</h2>
-                <div class="stat-row">
-                    <span>Detected Tone:</span>
-                    <span id="res-skin-tone" class="highlight">Loading...</span>
-                </div>
-            </div>
-
-            <div class="advice-grid">
-                <div class="card">
-                    <h3>Casual Look</h3>
-                    <p id="res-casual">...</p>
-                </div>
-                <div class="card">
-                    <h3>Formal Look</h3>
-                    <p id="res-formal">...</p>
-                </div>
-                <div class="card">
-                    <h3>Color Palette</h3>
-                    <div id="color-swatches" class="swatch-container"></div>
-                </div>
-                <div class="card">
-                    <h3>Avoid</h3>
-                    <div id="res-avoid" class="chip-container"></div>
-                </div>
-            </div>
-
-            <div class="card shopping-section">
-                <h3>Curated for You</h3>
-                <div id="shopping-links" class="link-container"></div>
-            </div>
+        <div class="chat-footer">
+            <input type="text" id="chat-input" placeholder="Ask a style question...">
+            <button id="send-chat-btn"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
-
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
